@@ -28,7 +28,7 @@ A prototype LLM-assisted regulatory reporting tool focused on COREP template C 0
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/corep-reporting-assistant.git
+   git clone https://github.com/TANMAY4806w/corep-reporting-assistant.git
    cd corep-reporting-assistant
    ```
 

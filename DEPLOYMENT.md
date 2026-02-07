@@ -15,14 +15,14 @@
    git add .
    git commit -m "Initial commit: COREP Reporting Assistant"
    git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/corep-reporting-assistant.git
+   git remote add origin https://github.com/TANMAY4806w/corep-reporting-assistant.git
    git push -u origin main
    ```
 
 2. **Deploy on Streamlit Cloud**
    - Go to [share.streamlit.io](https://share.streamlit.io)
    - Click "New app"
-   - Select your repository: `YOUR_USERNAME/corep-reporting-assistant`
+   - Select your repository: `TANMAY4806w/corep-reporting-assistant`
    - Set main file path: `src/app.py`
    - Click "Advanced settings"
    - Add secrets:
@@ -32,7 +32,7 @@
    - Click "Deploy"
 
 3. **Access Your App**
-   - Your app will be available at: `https://YOUR_USERNAME-corep-reporting-assistant.streamlit.app`
+   - Your app will be available at: `https://tanmay4806w-corep-reporting-assistant.streamlit.app`
 
 ### Updating the Deployment
 

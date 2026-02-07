@@ -377,7 +377,7 @@ REQUIRED OUTPUT FORMAT:
 }}
 """
         
-        # Execute LLM extraction with gemini-2.5-flash
+        # Execute LLM extraction with gemini-2.0-flash-exp
         response = client.models.generate_content(
             model='gemini-2.0-flash-exp',
             contents=prompt
