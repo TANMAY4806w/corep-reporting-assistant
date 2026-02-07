@@ -1,0 +1,14 @@
+Rule ID: CA1-0010
+Field: Common Equity Tier 1 Capital
+Row/Column: R010, C010
+Instruction: Includes capital instruments that meet Article 26(1). Typically common shares issued by the institution that are fully paid up.
+
+Rule ID: CA1-0020
+Field: Retained Earnings
+Row/Column: R130, C010
+Instruction: Profits that the bank has kept for its own use rather than distributing them to shareholders as dividends.
+
+Rule ID: CA1-0030
+Field: Accumulated other comprehensive income
+Row/Column: R180, C010
+Instruction: Includes unrealised gains and losses on financial assets measured at fair value through OCI.

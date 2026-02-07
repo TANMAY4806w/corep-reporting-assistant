@@ -1,0 +1,71 @@
+{
+    "template_id": "C 01.00",
+    "template_name": "Own Funds",
+    "version": "PRA 2026.1.0",
+    "jurisdiction": "UK PRA Rulebook",
+    "description": "COREP template for reporting own funds components under CRR Article 437",
+    "columns": [
+        {
+            "id": "C010",
+            "name": "Amount",
+            "data_type": "numeric",
+            "unit": "GBP",
+            "description": "Monetary amount in Great British Pounds"
+        }
+    ],
+    "rows": [
+        {
+            "id": "R010",
+            "name": "Common Equity Tier 1 Capital",
+            "description": "Capital instruments meeting Article 26(1) requirements. Typically common shares issued by the institution that are fully paid up.",
+            "data_type": "numeric",
+            "rule_id": "CA1-0010",
+            "default_for_numeric_input": true,
+            "validation": {
+                "allow_negative": false,
+                "min_value": 0,
+                "required": true
+            }
+        },
+        {
+            "id": "R130",
+            "name": "Retained Earnings",
+            "description": "Profits that the bank has kept for its own use rather than distributing them to shareholders as dividends.",
+            "data_type": "numeric",
+            "rule_id": "CA1-0020",
+            "validation": {
+                "allow_negative": true,
+                "required": false
+            }
+        },
+        {
+            "id": "R180",
+            "name": "Accumulated other comprehensive income",
+            "description": "Includes unrealised gains and losses on financial assets measured at fair value through OCI.",
+            "data_type": "numeric",
+            "rule_id": "CA1-0030",
+            "validation": {
+                "allow_negative": true,
+                "required": false
+            }
+        }
+    ],
+    "validation_rules": {
+        "allow_negative": false,
+        "required_fields": [
+            "row_id",
+            "value",
+            "justification"
+        ],
+        "numeric_precision": 2,
+        "currency": "GBP",
+        "min_fields": 1,
+        "max_fields": 10
+    },
+    "metadata": {
+        "last_updated": "2026-02-07",
+        "regulatory_authority": "Prudential Regulation Authority (PRA)",
+        "reporting_frequency": "Quarterly",
+        "applicable_institutions": "UK Banks subject to CRR"
+    }
+}
