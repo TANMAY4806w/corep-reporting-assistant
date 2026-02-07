@@ -381,8 +381,41 @@ with col2:
                     len(df),
                     help="Number of COREP fields populated"
                 )
+            
+            # Validation Status
+            validation_errors = data.get('validation_errors', [])
+            if validation_errors:
+                st.markdown("---")
+                error_count = sum(1 for e in validation_errors if e.get('severity') == 'error')
+                warning_count = sum(1 for e in validation_errors if e.get('severity') == 'warning')
+                
+                if error_count > 0:
+                    st.error(f"⚠️ **{error_count} Validation Error(s) Found**")
+                elif warning_count > 0:
+                    st.warning(f"⚠️ **{warning_count} Validation Warning(s)**")
+                
+                with st.expander("📋 View Validation Issues", expanded=(error_count > 0)):
+                    for err in validation_errors:
+                        severity_icon = "🔴" if err['severity'] == 'error' else "🟡"
+                        st.markdown(f"{severity_icon} **{err['row_id']}**: {err['message']}")
+            else:
+                st.markdown("---")
+                st.success("✅ **All Validations Passed**")
     else:
         st.info("ℹ️ Enter scenario data and click **PROCESS SCENARIO** to generate reporting extract.")
+
+# ============================================================================
+# RETRIEVED RULES SECTION
+# ============================================================================
+
+if 'data' in st.session_state and "retrieved_rules" in st.session_state['data']:
+    retrieved_rules = st.session_state['data']['retrieved_rules']
+    if retrieved_rules:
+        st.markdown("---")
+        with st.expander(f"🔍 **Retrieved Rules ({len(retrieved_rules)} rules used)**", expanded=False):
+            st.caption("These regulatory rules were identified as relevant to your scenario and used for extraction.")
+            for idx, rule in enumerate(retrieved_rules, 1):
+                st.markdown(f"**{idx}.** {rule.get('id', 'N/A')} - {rule.get('field', 'N/A')}")
 
 # ============================================================================
 # EXPANDABLE JUSTIFICATION LOG

@@ -97,8 +97,188 @@ def _create_numeric_result(value: float, schema: Dict[str, Any]) -> Dict[str, An
                 "value": value,
                 "justification": "CA1-0010 (Auto-mapped from numeric input)"
             }
-        ]
+        ],
+        "validation_errors": [],
+        "retrieved_rules": []
     }
+
+
+def retrieve_relevant_rules(user_scenario: str, all_rules: str) -> List[Dict[str, str]]:
+    """
+    Retrieve relevant regulatory rules based on user scenario using keyword matching.
+    
+    This implements a simple but effective retrieval mechanism that:
+    1. Extracts key financial terms from the user scenario
+    2. Matches them against rule descriptions
+    3. Returns the most relevant rules for LLM processing
+    
+    Args:
+        user_scenario: User input text
+        all_rules: Complete regulatory rules text
+        
+    Returns:
+        List of relevant rule dictionaries with id, field, and instruction
+    """
+    # Parse rules into structured format
+    rules = []
+    current_rule = {}
+    
+    for line in all_rules.split('\n'):
+        line = line.strip()
+        if line.startswith('Rule ID:'):
+            if current_rule:
+                rules.append(current_rule)
+            current_rule = {'id': line.replace('Rule ID:', '').strip()}
+        elif line.startswith('Field:'):
+            current_rule['field'] = line.replace('Field:', '').strip()
+        elif line.startswith('Row/Column:'):
+            current_rule['row_column'] = line.replace('Row/Column:', '').strip()
+        elif line.startswith('Instruction:'):
+            current_rule['instruction'] = line.replace('Instruction:', '').strip()
+    
+    if current_rule:
+        rules.append(current_rule)
+    
+    # Extract keywords from user scenario (case-insensitive)
+    scenario_lower = user_scenario.lower()
+    
+    # Financial keywords to look for
+    keywords = [
+        'common equity', 'cet1', 'tier 1', 'tier 2', 'capital',
+        'retained earnings', 'comprehensive income', 'intangible',
+        'deferred tax', 'deduction', 'securitisation', 'pension',
+        'additional tier', 'subordinated', 'minority', 'goodwill'
+    ]
+    
+    # Score each rule based on keyword matches
+    scored_rules = []
+    for rule in rules:
+        score = 0
+        rule_text = f"{rule.get('field', '')} {rule.get('instruction', '')}".lower()
+        
+        # Check for keyword matches
+        for keyword in keywords:
+            if keyword in scenario_lower and keyword in rule_text:
+                score += 2
+            elif keyword in rule_text:
+                score += 1
+        
+        # Boost score if row/column is mentioned
+        if 'row_column' in rule and any(rc in scenario_lower for rc in rule.get('row_column', '').split(',')):
+            score += 3
+        
+        if score > 0:
+            scored_rules.append((score, rule))
+    
+    # Sort by score and return top 10 rules
+    scored_rules.sort(reverse=True, key=lambda x: x[0])
+    top_rules = [rule for score, rule in scored_rules[:10]]
+    
+    # If no matches, return first 5 rules as fallback
+    if not top_rules:
+        top_rules = rules[:5]
+    
+    logger.info(f"Retrieved {len(top_rules)} relevant rules from {len(rules)} total rules")
+    return top_rules
+
+
+def validate_results(results: List[Dict[str, Any]], schema: Dict[str, Any]) -> List[Dict[str, str]]:
+    """
+    Validate extracted results against schema validation rules.
+    
+    Checks for:
+    - Negative values where not allowed
+    - Missing required fields
+    - Duplicate row IDs
+    - Invalid row IDs not in schema
+    - Data type mismatches
+    
+    Args:
+        results: List of extracted field mappings
+        schema: COREP schema with validation rules
+        
+    Returns:
+        List of validation error dictionaries with severity and message
+    """
+    errors = []
+    validation_rules = schema.get('validation_rules', {})
+    schema_rows = {row['id']: row for row in schema.get('rows', [])}
+    
+    seen_row_ids = set()
+    
+    for idx, result in enumerate(results):
+        row_id = result.get('row_id', '')
+        value = result.get('value', 0)
+        
+        # Check for required fields
+        required_fields = validation_rules.get('required_fields', [])
+        for field in required_fields:
+            if field not in result or result[field] is None:
+                errors.append({
+                    'severity': 'error',
+                    'row_id': row_id,
+                    'message': f"Missing required field: {field}"
+                })
+        
+        # Check for duplicate row IDs
+        if row_id in seen_row_ids:
+            errors.append({
+                'severity': 'error',
+                'row_id': row_id,
+                'message': f"Duplicate row ID: {row_id}"
+            })
+        seen_row_ids.add(row_id)
+        
+        # Check if row ID exists in schema
+        if row_id not in schema_rows:
+            errors.append({
+                'severity': 'warning',
+                'row_id': row_id,
+                'message': f"Row ID {row_id} not found in schema"
+            })
+            continue
+        
+        # Get row-specific validation rules
+        row_schema = schema_rows[row_id]
+        row_validation = row_schema.get('validation', {})
+        
+        # Check for negative values
+        allow_negative = row_validation.get('allow_negative', validation_rules.get('allow_negative', False))
+        if not allow_negative and value < 0:
+            errors.append({
+                'severity': 'error',
+                'row_id': row_id,
+                'message': f"Negative value not allowed for {row_schema.get('name', row_id)}: {value}"
+            })
+        
+        # Check minimum value constraints
+        if 'min_value' in row_validation and value < row_validation['min_value']:
+            errors.append({
+                'severity': 'error',
+                'row_id': row_id,
+                'message': f"Value {value} below minimum {row_validation['min_value']}"
+            })
+        
+        # Check data type
+        expected_type = row_schema.get('data_type', 'numeric')
+        if expected_type == 'numeric' and not isinstance(value, (int, float)):
+            errors.append({
+                'severity': 'error',
+                'row_id': row_id,
+                'message': f"Expected numeric value, got {type(value).__name__}"
+            })
+    
+    # Check for minimum number of fields
+    min_fields = validation_rules.get('min_fields', 0)
+    if len(results) < min_fields:
+        errors.append({
+            'severity': 'warning',
+            'row_id': 'GENERAL',
+            'message': f"Only {len(results)} fields extracted, minimum {min_fields} expected"
+        })
+    
+    logger.info(f"Validation complete: {len(errors)} issues found")
+    return errors
 
 
 def process_reporting_scenario(user_scenario: str) -> Dict[str, Any]:
@@ -144,16 +324,32 @@ def process_reporting_scenario(user_scenario: str) -> Dict[str, Any]:
             logger.info(f"Numeric input detected: {user_scenario}")
             # Parse numeric value and create R010 mapping
             numeric_value = float(user_scenario.replace(',', ''))
-            return _create_numeric_result(numeric_value, schema)
+            result = _create_numeric_result(numeric_value, schema)
+            # Add validation
+            validation_errors = validate_results(result['results'], schema)
+            result['validation_errors'] = validation_errors
+            return result
         
         # Narrative input: perform full LLM extraction
         logger.info("Narrative input detected, initiating LLM extraction")
         
-        # Construct structured prompt with schema context
+        # RETRIEVAL: Get relevant rules instead of using all rules
+        relevant_rules = retrieve_relevant_rules(user_scenario, rules)
+        
+        # Format retrieved rules for prompt
+        rules_text = "\n\n".join([
+            f"Rule ID: {r.get('id', 'N/A')}\n"
+            f"Field: {r.get('field', 'N/A')}\n"
+            f"Row/Column: {r.get('row_column', 'N/A')}\n"
+            f"Instruction: {r.get('instruction', 'N/A')}"
+            for r in relevant_rules
+        ])
+        
+        # Construct structured prompt with RETRIEVED rules
         prompt = f"""You are a regulatory reporting specialist for UK Banks. Extract capital and own funds data from the scenario below and map to COREP template C 01.00.
 
-REGULATORY RULES:
-{rules}
+RELEVANT REGULATORY RULES (Retrieved):
+{rules_text}
 
 SCHEMA DEFINITION:
 {json.dumps(schema, indent=2)}
@@ -211,14 +407,17 @@ REQUIRED OUTPUT FORMAT:
             logger.error("Invalid response structure: missing 'results' array")
             return {"error": "Invalid extraction format: expected results array"}
         
-        # Validate required fields in each result
-        required_fields = schema.get('validation_rules', {}).get('required_fields', [])
-        for idx, item in enumerate(result["results"]):
-            missing_fields = [f for f in required_fields if f not in item]
-            if missing_fields:
-                logger.warning(f"Result {idx} missing fields: {missing_fields}")
+        # Perform validation on extracted results
+        validation_errors = validate_results(result["results"], schema)
+        result['validation_errors'] = validation_errors
         
-        logger.info(f"Successfully extracted {len(result['results'])} field mappings")
+        # Add retrieved rules info for audit trail
+        result['retrieved_rules'] = [
+            {'id': r.get('id'), 'field': r.get('field')} 
+            for r in relevant_rules
+        ]
+        
+        logger.info(f"Successfully extracted {len(result['results'])} field mappings with {len(validation_errors)} validation issues")
         return result
         
     except FileNotFoundError as file_err:

@@ -12,3 +12,88 @@ Rule ID: CA1-0030
 Field: Accumulated other comprehensive income
 Row/Column: R180, C010
 Instruction: Includes unrealised gains and losses on financial assets measured at fair value through OCI.
+
+Rule ID: CA1-0040
+Field: Additional Tier 1 instruments
+Row/Column: R020, C010
+Instruction: Capital instruments that meet the conditions in Article 52(1) of CRR. Must be perpetual, subordinated, and loss-absorbing.
+
+Rule ID: CA1-0050
+Field: Share premium accounts related to CET1
+Row/Column: R120, C010
+Instruction: Premium paid above par value for common equity shares. Must relate to instruments included in CET1 capital.
+
+Rule ID: CA1-0060
+Field: Minority interests in CET1
+Row/Column: R200, C010
+Instruction: CET1 capital of consolidated subsidiaries attributable to third parties. Subject to recognition limits under Article 84 CRR.
+
+Rule ID: CA1-0070
+Field: Tier 2 Capital
+Row/Column: R030, C010
+Instruction: Capital instruments meeting Article 63 CRR conditions. Includes subordinated debt with minimum 5-year maturity.
+
+Rule ID: CA1-0080
+Field: Deduction: Intangible assets
+Row/Column: R250, C010
+Instruction: Goodwill and other intangible assets must be deducted from CET1 capital per Article 36(1)(b) CRR. Apply net of associated deferred tax liabilities.
+
+Rule ID: CA1-0090
+Field: Deduction: Deferred tax assets
+Row/Column: R260, C010
+Instruction: Deferred tax assets that rely on future profitability must be deducted from CET1 per Article 36(1)(c) CRR. Threshold exemptions apply.
+
+Rule ID: CA1-0100
+Field: Deduction: IRB shortfall
+Row/Column: R270, C010
+Instruction: Shortfall of provisions to expected losses under IRB approach. Deducted 50% from Tier 1 and 50% from Tier 2 per Article 36(1)(d).
+
+Rule ID: CA1-0110
+Field: Deduction: Securitisation positions
+Row/Column: R280, C010
+Instruction: Securitisation positions receiving 1250% risk weight must be deducted from capital per Article 36(1)(k) CRR.
+
+Rule ID: CA1-0120
+Field: Deduction: Holdings in financial institutions
+Row/Column: R290, C010
+Instruction: Significant investments in CET1 instruments of financial sector entities exceeding 10% threshold. Deducted per Article 36(1)(i) CRR.
+
+Rule ID: CA1-0130
+Field: Prudential filters: AFS reserves
+Row/Column: R140, C010
+Instruction: Unrealised gains on available-for-sale assets. May be subject to prudential filters per Article 35 CRR depending on institution's choice.
+
+Rule ID: CA1-0140
+Field: Transitional adjustments
+Row/Column: R300, C010
+Instruction: Phased-in recognition of capital instruments and deductions during CRR transitional period. Percentages defined in Part Ten CRR.
+
+Rule ID: CA1-0150
+Field: Regulatory adjustments: Cash flow hedges
+Row/Column: R150, C010
+Instruction: Gains and losses on cash flow hedge reserves. Treatment depends on whether institution applies IAS 39 or IFRS 9.
+
+Rule ID: CA1-0160
+Field: Regulatory adjustments: Pension fund assets
+Row/Column: R310, C010
+Instruction: Defined benefit pension fund assets net of liabilities. Deducted from CET1 per Article 36(1)(e) CRR.
+
+Rule ID: CA1-0170
+Field: Regulatory adjustments: Own credit risk
+Row/Column: R160, C010
+Instruction: Gains or losses on liabilities valued at fair value resulting from changes in own credit standing. Must be derecognised from CET1.
+
+Rule ID: CA1-0180
+Field: Capital instruments eligible for grandfathering
+Row/Column: R320, C010
+Instruction: Capital instruments issued before CRR implementation that do not meet new criteria. Subject to phase-out schedule per Article 483-486 CRR.
+
+Rule ID: CA1-0190
+Field: Qualifying Tier 1 capital
+Row/Column: R040, C010
+Instruction: Sum of CET1 and Additional Tier 1 capital after all regulatory adjustments and deductions. Used for Tier 1 capital ratio calculation.
+
+Rule ID: CA1-0200
+Field: Total Own Funds
+Row/Column: R050, C010
+Instruction: Sum of Tier 1 and Tier 2 capital. Represents total regulatory capital available to absorb losses per Article 72 CRR.
